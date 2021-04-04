@@ -1,62 +1,24 @@
-version: "3.8"
+version: "3.7"
 services:
-    apache:
-        container_name: elfclickapache
-        build: "./apache"
-        restart: always
-        #     context: .
-        #     dockerfile: Dockerfile
-        # image: php:8.0.3-apache
-        networks:
-            - frontend
-            - backend
-        volumes:
-            # - type: bind
-            #   source: ./stage
-            #   target: /var/www/html/
-            - ../cert/:/usr/local/apache2/cert/
-            - ../stage:/var/www/html/
-        ports:
-            - "8000:80"
-            - "443:443"
-        depends_on:
-            - php
-            - mysql
-        labels:
-            name: "elfclick Web App"
-            role: "elfclick Web App Server"
-    php:
-        container_name: elfclickphp
-        build: './php'
-        restart: always
-        networks: 
-            - backend
-        volumes:
-            - ../stage:/var/www/html/
-            - ../tmp:/usr/local/tmp
-    mysql:
-        container_name: elfclickmysql
-        build: './mysql'
-        restart: always
-        networks:
-            - backend
-        volumes:
-            - ../database:/var/lib/mysql
-networks: 
-    backend:
-    frontend:
-
-
-
-    # db:
-    #     container_name: elfclickphpmysql
-    #     image: mysql:8.0.23
-    #     command: --default-authentication-plugin=mysql_native_password
-    #     restart: always
-    #     environment:
-    #         MYSQL_ROOT_PASSWORD: root
-    #         MYSQL_DATABASE: elfclick
-    #         MYSQL_USER: webuser
-    #         MYSQL_PASSWORD: webuserpass
-    #     ports:
-    #         - 6033:3306
+  web:
+    build:
+      context: ./apache-php
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "4000:80"
+    volumes:
+      - ./www:/var/www
+  db:
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_ROOT_HOST=%
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
